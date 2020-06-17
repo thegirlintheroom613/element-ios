@@ -33,7 +33,7 @@
     self = [super init];
     if (self)
     {
-        [MXSDKOptions sharedInstance].applicationGroupIdentifier = @"group.im.vector";
+        [MXSDKOptions sharedInstance].applicationGroupIdentifier = @"group.im.vector.p2p";
 
         // NSLog -> console.log file when not debugging the app
         if (!isatty(STDERR_FILENO))

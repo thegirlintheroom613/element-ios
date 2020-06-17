@@ -58,6 +58,8 @@
 
 #import "Riot-Swift.h"
 
+#import <Gobind/Gobind.h>
+
 //#define MX_CALL_STACK_OPENWEBRTC
 #ifdef MX_CALL_STACK_OPENWEBRTC
 #import <MatrixOpenWebRTCWrapper/MatrixOpenWebRTCWrapper.h>
@@ -249,7 +251,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
     // Set the App Group identifier.
     MXSDKOptions *sdkOptions = [MXSDKOptions sharedInstance];
-    sdkOptions.applicationGroupIdentifier = @"group.im.vector";
+    sdkOptions.applicationGroupIdentifier = @"group.im.vector.p2p";
     sdkOptions.computeE2ERoomSummaryTrust = YES;
 
     // Redirect NSLogs to files only if we are not debugging
@@ -443,6 +445,12 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     NSLog(@"------------------------------\n");
     
     [self setupUserDefaults];
+    
+    //GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
+    //monolith.storageDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"];
+    //[monolith start];
+    
+    //NSLog(@"HOMESERVER URL: %@\n", monolith.baseURL);
 
     // Set up theme
     ThemeService.shared.themeId = RiotSettings.shared.userInterfaceTheme;

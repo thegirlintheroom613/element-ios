@@ -79,7 +79,8 @@ abstract_target 'RiotPods' do
         pod 'DGCollectionViewLeftAlignFlowLayout', '~> 1.0.4'        
         pod 'KTCenterFlowLayout', '~> 1.3.1'
         pod 'ZXingObjC', '~> 3.6.5'
-        
+        pod 'Dendrite', :path => "/Users/neilalexander/Desktop/dendrite-pod"
+         
         target 'RiotTests' do
             inherit! :search_paths
         end

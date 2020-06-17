@@ -77,7 +77,7 @@ class NotificationService: UNNotificationServiceExtension {
     
     func setup(withRoomId roomId: String, completion: @escaping () -> Void) {
         let sdkOptions = MXSDKOptions.sharedInstance()
-        sdkOptions.applicationGroupIdentifier = "group.im.vector"
+        sdkOptions.applicationGroupIdentifier = "group.im.vector.p2p"
         sdkOptions.disableIdenticonUseForUserAvatar = true
         sdkOptions.enableCryptoWhenStartingMXSession = true
         sdkOptions.backgroundModeHandler = MXUIKitBackgroundModeHandler()
