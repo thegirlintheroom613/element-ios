@@ -9,6 +9,7 @@ Improvements:
  * Authentication: Redirect the webview (SSO) javascript logs to iOS native logs.
  * Timeline: Hide encrypted history (pre-invite) (#3239).
  * NSE: Increase number of log files to 100.
+ * NSE: Make extension reusable (#3326).
  
 Bug fix:
  * Xcode11: Fix content change error when dragging start chat page (PR #3075).
@@ -26,7 +27,8 @@ Bug fix:
  * Xcode11: Respect system dark mode setting (#2628).
  * Xcode11: Fix noisy notifications (#3316).
  * Xcode11: Temporary workaround for navigation bar bg color on emoji selection screen (#3271).
- * Xcode11: Pass eventId when navigating to room from notification (#3321).
+ * Project: Remove GoogleService-Info.plist (#3329).
+ * Xcode11: Various bug fixes about NSE (PR #3345).
  
  Changes in 0.11.6 (2020-xx-xx)
  ===============================================
