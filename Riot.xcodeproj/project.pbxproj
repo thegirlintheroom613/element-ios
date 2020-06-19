@@ -117,6 +117,7 @@
 		32F6B96E2270623100BBA352 /* KeyVerificationDataLoadingViewModelType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32F6B9682270623100BBA352 /* KeyVerificationDataLoadingViewModelType.swift */; };
 		32FDC1CD2386CD390084717A /* RiotSettingIntegrationProvisioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32FDC1CC2386CD390084717A /* RiotSettingIntegrationProvisioning.swift */; };
 		398F43BC249B9E190042FD31 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 398F43BB249B9E190042FD31 /* NetworkExtension.framework */; };
+		3993FB6E249CE41400E64F28 /* RiotNSE.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EC85D7432477E5F7002C44C9 /* RiotNSE.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3AF393339D2D566CE14AC200 /* Pods_RiotTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 129EB7E27E7E4AC3F5F098F5 /* Pods_RiotTests.framework */; };
 		405FD41D306133A48D9B5AA1 /* Pods_RiotPods_Riot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ACF09217ADF1D7E7A35BC02 /* Pods_RiotPods_Riot.framework */; };
 		670966FEFE120D865FD8A5B6 /* Pods_RiotPods_SiriIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51187E952D5CECF6D6F5A28E /* Pods_RiotPods_SiriIntents.framework */; };
@@ -709,7 +710,6 @@
 		EC85D73A2477DDB8002C44C9 /* DirectorySectionHeaderContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EC85D7392477DDB8002C44C9 /* DirectorySectionHeaderContainerView.m */; };
 		EC85D73E2477DDD0002C44C9 /* PushNotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = EC85D73D2477DDD0002C44C9 /* PushNotificationService.m */; };
 		EC85D7462477E5F7002C44C9 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC85D7452477E5F7002C44C9 /* NotificationService.swift */; };
-		EC85D74A2477E5F7002C44C9 /* RiotNSE.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EC85D7432477E5F7002C44C9 /* RiotNSE.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EC85D74F2477E8EB002C44C9 /* RiotSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B5597F20EFC3DF00210D55 /* RiotSettings.swift */; };
 		EC85D751247C0E8F002C44C9 /* UNUserNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC85D750247C0E8F002C44C9 /* UNUserNotificationCenter.swift */; };
 		EC85D752247C0F52002C44C9 /* UNUserNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC85D750247C0E8F002C44C9 /* UNUserNotificationCenter.swift */; };
@@ -753,19 +753,19 @@
 			remoteGlobalIDString = 24CBEC4D1F0EAD310093EABB;
 			remoteInfo = "Riot Share Extension";
 		};
+		3993FB6F249CE41400E64F28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F094A99A1B78D8F000B1FBBF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC85D7422477E5F7002C44C9;
+			remoteInfo = RiotNSE;
+		};
 		92726A491F58737A004AD26F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F094A99A1B78D8F000B1FBBF /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 92726A421F58737A004AD26F;
 			remoteInfo = SiriIntents;
-		};
-		EC85D7482477E5F7002C44C9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F094A99A1B78D8F000B1FBBF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = EC85D7422477E5F7002C44C9;
-			remoteInfo = RiotNSE;
 		};
 		F094A9BF1B78D8F000B1FBBF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -785,7 +785,7 @@
 			files = (
 				24CBEC591F0EAD310093EABB /* RiotShareExtension.appex in Embed App Extensions */,
 				92726A4B1F58737A004AD26F /* SiriIntents.appex in Embed App Extensions */,
-				EC85D74A2477E5F7002C44C9 /* RiotNSE.appex in Embed App Extensions */,
+				3993FB6E249CE41400E64F28 /* RiotNSE.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -922,6 +922,7 @@
 		32FDC1CC2386CD390084717A /* RiotSettingIntegrationProvisioning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiotSettingIntegrationProvisioning.swift; sourceTree = "<group>"; };
 		3942DD65EBEB7AE647C6392A /* Pods-RiotPods-SiriIntents.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RiotPods-SiriIntents.debug.xcconfig"; path = "Target Support Files/Pods-RiotPods-SiriIntents/Pods-RiotPods-SiriIntents.debug.xcconfig"; sourceTree = "<group>"; };
 		398F43BB249B9E190042FD31 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		3993FB6A249CE37700E64F28 /* MatrixKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MatrixKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D78489021AC9E6400B98A7D /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		3D78489121AC9E6500B98A7D /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3D78489221AC9E6500B98A7D /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Vector.strings; sourceTree = "<group>"; };
@@ -2156,6 +2157,7 @@
 		5FC42FA41F5186AFFB6A2404 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3993FB6A249CE37700E64F28 /* MatrixKit.framework */,
 				398F43BB249B9E190042FD31 /* NetworkExtension.framework */,
 				92726A501F587410004AD26F /* Intents.framework */,
 				1ACF09217ADF1D7E7A35BC02 /* Pods_RiotPods_Riot.framework */,
@@ -4555,7 +4557,7 @@
 			dependencies = (
 				242661F61F12B1BA00D3FC08 /* PBXTargetDependency */,
 				92726A4A1F58737A004AD26F /* PBXTargetDependency */,
-				EC85D7492477E5F7002C44C9 /* PBXTargetDependency */,
+				3993FB70249CE41400E64F28 /* PBXTargetDependency */,
 			);
 			name = Riot;
 			productName = Vector;
@@ -5656,15 +5658,15 @@
 			target = 24CBEC4D1F0EAD310093EABB /* RiotShareExtension */;
 			targetProxy = 242661F51F12B1BA00D3FC08 /* PBXContainerItemProxy */;
 		};
+		3993FB70249CE41400E64F28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC85D7422477E5F7002C44C9 /* RiotNSE */;
+			targetProxy = 3993FB6F249CE41400E64F28 /* PBXContainerItemProxy */;
+		};
 		92726A4A1F58737A004AD26F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 92726A421F58737A004AD26F /* SiriIntents */;
 			targetProxy = 92726A491F58737A004AD26F /* PBXContainerItemProxy */;
-		};
-		EC85D7492477E5F7002C44C9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = EC85D7422477E5F7002C44C9 /* RiotNSE */;
-			targetProxy = EC85D7482477E5F7002C44C9 /* PBXContainerItemProxy */;
 		};
 		F094A9C01B78D8F000B1FBBF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
