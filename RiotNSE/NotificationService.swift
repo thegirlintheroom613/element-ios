@@ -35,7 +35,7 @@ class NotificationService: UNNotificationServiceExtension {
     
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         //  set app-group identifier first
-        MXSDKOptions.sharedInstance().applicationGroupIdentifier = "group.im.vector"
+        MXSDKOptions.sharedInstance().applicationGroupIdentifier = "group.im.vector.p2p"
         
         //  setup logs
         setupLogger()
