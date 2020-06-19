@@ -113,6 +113,10 @@
     [self.customServersTickButton setImage:[UIImage imageNamed:@"selection_untick"] forState:UIControlStateHighlighted];
     
     [self hideCustomServers:YES];
+    [self.customServersTickButton setHidden:YES];
+    [self.customServersContainer setHidden:YES];
+    [self.homeServerContainer setHidden:YES];
+    [self.forgotPasswordButton setHidden:YES];
 
     // Soft logout section
     self.softLogoutClearDataButton.layer.cornerRadius = 5;
@@ -989,7 +993,7 @@
         return;
     }
     
-    if (hidden)
+    if (true || hidden)
     {
         [self.homeServerTextField resignFirstResponder];
         [self.identityServerTextField resignFirstResponder];

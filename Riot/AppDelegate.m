@@ -446,12 +446,20 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     
     [self setupUserDefaults];
     
-    //GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
-    //monolith.storageDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"];
-    //[monolith start];
+    // ----------------------------- DENDRITE ----------------------------- //
     
-    //NSLog(@"HOMESERVER URL: %@\n", monolith.baseURL);
-
+    GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
+    monolith.storageDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"];
+    [monolith start];
+    
+    NSLog(@"HOMESERVER URL: %@\n", monolith.baseURL);
+    [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers = false;
+    [MXKAppSettings standardAppSettings].syncLocalContacts = false;
+    [[NSUserDefaults standardUserDefaults] setObject:monolith.baseURL forKey:@"homeserverurl"];
+    //[[NSUserDefaults standardUserDefaults] setObject:@"https://dendrite.neilalexander.dev/" forKey:@"homeserverurl"];
+    
+    // ----------------------------- DENDRITE ----------------------------- //
+    
     // Set up theme
     ThemeService.shared.themeId = RiotSettings.shared.userInterfaceTheme;
 
@@ -1823,7 +1831,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     sdkOptions.mediaCacheAppVersion = 0;
     
     // Enable e2e encryption for newly created MXSession
-    sdkOptions.enableCryptoWhenStartingMXSession = YES;
+    sdkOptions.enableCryptoWhenStartingMXSession = NO;
     
     // Disable identicon use
     sdkOptions.disableIdenticonUseForUserAvatar = YES;
@@ -1950,7 +1958,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                 [self checkPendingIncomingKeyVerificationsInSession:mxSession];
             }
         }
-        
         [self handleLaunchAnimation];
     }];
     
