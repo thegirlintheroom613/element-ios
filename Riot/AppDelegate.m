@@ -212,6 +212,11 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
      */
     UIView *launchAnimationContainerView;
     NSDate *launchAnimationStart;
+    
+    /**
+        The Yggdrasil node.
+     */
+    GobindDendriteMonolith *monolith;
 }
 
 @property (strong, nonatomic) UIAlertController *mxInAppNotification;
@@ -390,6 +395,18 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 #pragma mark - UIApplicationDelegate
 
+- (NSString*)yggdrasilPeers
+{
+    long count = [monolith peerCount];
+    if (count == 0) {
+        return @"No connected peers";
+    } else if (count == 1) {
+        return [NSString stringWithFormat:@"%li connected peer", count];
+    } else {
+        return [NSString stringWithFormat:@"%li connected peers", count];
+    }
+}
+
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions
 {
     // Create message sound
@@ -448,7 +465,8 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     
     // ----------------------------- DENDRITE ----------------------------- //
     
-    GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
+    monolith = [[GobindDendriteMonolith alloc] init];
+    //GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
     monolith.storageDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"];
     [monolith start];
     

@@ -100,6 +100,8 @@ extern NSString *const AppDelegateUniversalLinkDidChangeNotification;
 
 + (AppDelegate*)theDelegate;
 
+- (NSString*)yggdrasilPeers;
+
 #pragma mark - Push Notifications
 
 /**
