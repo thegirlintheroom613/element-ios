@@ -51,7 +51,10 @@ NSString* const kSettingsViewControllerPhoneBookCountryCellId = @"kSettingsViewC
 enum
 {
     SETTINGS_SECTION_SIGN_OUT_INDEX = 0,
+    SETTINGS_SECTION_YGGDRASIL_INDEX,
     SETTINGS_SECTION_USER_SETTINGS_INDEX,
+    SETTINGS_SECTION_USER_INTERFACE_INDEX,
+    SETTINGS_SECTION_COUNT,
     SETTINGS_SECTION_SECURITY_INDEX,
     SETTINGS_SECTION_NOTIFICATIONS_SETTINGS_INDEX,
     SETTINGS_SECTION_CALLS_INDEX,
@@ -60,13 +63,11 @@ enum
     SETTINGS_SECTION_CONTACTS_INDEX,
     SETTINGS_SECTION_IGNORED_USERS_INDEX,
     SETTINGS_SECTION_INTEGRATIONS_INDEX,
-    SETTINGS_SECTION_USER_INTERFACE_INDEX,
     SETTINGS_SECTION_ADVANCED_INDEX,
     SETTINGS_SECTION_OTHER_INDEX,
     SETTINGS_SECTION_LABS_INDEX,
     SETTINGS_SECTION_FLAIR_INDEX,
-    SETTINGS_SECTION_DEACTIVATE_ACCOUNT_INDEX,
-    SETTINGS_SECTION_COUNT
+    SETTINGS_SECTION_DEACTIVATE_ACCOUNT_INDEX
 };
 
 enum
@@ -184,10 +185,19 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
     // New email address to bind
     UITextField* newEmailTextField;
     
+    // New Yggdrasil static peer to bind
+    UITextField* newYggdrasilPeerTextField;
+    
     // New phone number to bind
     TableViewCellWithPhoneNumberTextField * newPhoneNumberCell;
     CountryPickerViewController *newPhoneNumberCountryPicker;
     NBPhoneNumber *newPhoneNumber;
+    
+    // Dynamic rows in the Yggdrasil settings section
+    NSInteger yggdrasilSettingsEnableMulticastIndex;
+    NSInteger yggdrasilSettingsEnableStaticIndex;
+    NSInteger yggdrasilSettingsStaticPeerIndex;
+    NSInteger yggdrasilSettingsPublicPeersIndex;
     
     // Dynamic rows in the user settings section
     NSInteger userSettingsProfilePictureIndex;
@@ -240,6 +250,11 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
  Flag indicating whether the user is typing an email to bind.
  */
 @property (nonatomic) BOOL newEmailEditingEnabled;
+
+/**
+ Flag indicating whether the user is typing an Yggdrasil peer to bind.
+ */
+@property (nonatomic) BOOL newYggdrasilPeerEditingEnabled;
 
 /**
  Flag indicating whether the user is typing a phone number to bind.
@@ -1140,6 +1155,15 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
     {
         count = 1;
     }
+    else if (section == SETTINGS_SECTION_YGGDRASIL_INDEX)
+    {
+        yggdrasilSettingsEnableMulticastIndex = 0;
+        yggdrasilSettingsEnableStaticIndex = 1;
+        yggdrasilSettingsStaticPeerIndex = 2;
+        yggdrasilSettingsPublicPeersIndex = 3;
+        
+        count = 4;
+    }
     else if (section == SETTINGS_SECTION_USER_SETTINGS_INDEX)
     {
         MXKAccount* account = [MXKAccountManager sharedManager].activeAccounts.firstObject;
@@ -1160,7 +1184,8 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
         userSettingsNewPhoneIndex = userSettingsPhoneStartIndex + account.linkedPhoneNumbers.count;
         userSettingsThreePidsInformation = userSettingsNewPhoneIndex + 1;
         
-        count = userSettingsThreePidsInformation + 1;
+        count = 2;
+        //count = userSettingsThreePidsInformation + 1;
     }
     else if (section == SETTINGS_SECTION_NOTIFICATIONS_SETTINGS_INDEX)
     {
@@ -1377,6 +1402,78 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
         signOutCell.mxkButton.accessibilityIdentifier=@"SettingsVCSignOutButton";
         
         cell = signOutCell;
+    }
+    else if (section == SETTINGS_SECTION_YGGDRASIL_INDEX)
+    {
+        if (row == yggdrasilSettingsEnableMulticastIndex)
+        {
+            MXKTableViewCellWithLabelAndSwitch* yggdrasilEnableMulticastCell = [self getLabelAndSwitchCell:tableView forIndexPath:indexPath];
+            
+            yggdrasilEnableMulticastCell.mxkLabel.text = @"Connect to nearby devices";
+            yggdrasilEnableMulticastCell.mxkSwitch.on = !RiotSettings.shared.yggdrasilDisableAWDL;
+            yggdrasilEnableMulticastCell.mxkSwitch.onTintColor = ThemeService.shared.theme.tintColor;
+            yggdrasilEnableMulticastCell.mxkSwitch.enabled = YES;
+            yggdrasilEnableMulticastCell.mxkSwitch.accessibilityIdentifier = @"SettingsYggdrasilDisableAWDLSwitch";
+            [yggdrasilEnableMulticastCell.mxkSwitch addTarget:self action:@selector(updateYggdrasilDisableAWDL:) forControlEvents:UIControlEventTouchUpInside];
+            
+            cell = yggdrasilEnableMulticastCell;
+        }
+        else if (row == yggdrasilSettingsEnableStaticIndex)
+        {
+            MXKTableViewCellWithLabelAndSwitch* yggdrasilEnableStaticCell = [self getLabelAndSwitchCell:tableView forIndexPath:indexPath];
+            
+            yggdrasilEnableStaticCell.mxkLabel.text = @"Connect to static peer";
+            yggdrasilEnableStaticCell.mxkSwitch.on = RiotSettings.shared.yggdrasilEnableStaticPeer;
+            yggdrasilEnableStaticCell.mxkSwitch.onTintColor = ThemeService.shared.theme.tintColor;
+            yggdrasilEnableStaticCell.mxkSwitch.enabled = YES;
+            yggdrasilEnableStaticCell.mxkSwitch.accessibilityIdentifier = @"SettingsYggdrasilEnableStaticPeerSwitch";
+            [yggdrasilEnableStaticCell.mxkSwitch addTarget:self action:@selector(updateYggdrasilEnableStaticPeer:) forControlEvents:UIControlEventTouchUpInside];
+            
+            cell = yggdrasilEnableStaticCell;
+        }
+        else if (row == yggdrasilSettingsStaticPeerIndex)
+        {
+            MXKTableViewCellWithLabelAndTextField *yggdrasilStaticPeerCell = [self getLabelAndTextFieldCell:tableView forIndexPath:indexPath];
+            
+            yggdrasilStaticPeerCell.mxkLabel.text = @"Static peer";
+            yggdrasilStaticPeerCell.mxkTextField.text = RiotSettings.shared.yggdrasilStaticPeerURI;
+            yggdrasilStaticPeerCell.mxkTextField.placeholder = @"Not configured";
+            
+            yggdrasilStaticPeerCell.mxkTextField.tag = row;
+            yggdrasilStaticPeerCell.mxkTextField.delegate = self;
+            [yggdrasilStaticPeerCell.mxkTextField removeTarget:self action:@selector(updateYggdrasilStaticPeerURI:) forControlEvents:UIControlEventEditingDidEnd];
+            [yggdrasilStaticPeerCell.mxkTextField addTarget:self action:@selector(updateYggdrasilStaticPeerURI:) forControlEvents:UIControlEventEditingDidEnd];
+            yggdrasilStaticPeerCell.mxkTextField.accessibilityIdentifier = @"SettingsYggdrasilStaticPeerTextField";
+            
+            cell = yggdrasilStaticPeerCell;
+        }
+        else if (row == yggdrasilSettingsPublicPeersIndex)
+        {
+            MXKTableViewCellWithButton *yggdrasilPublicPeersCell = [tableView dequeueReusableCellWithIdentifier:[MXKTableViewCellWithButton defaultReuseIdentifier]];
+            if (!yggdrasilPublicPeersCell)
+            {
+                yggdrasilPublicPeersCell = [[MXKTableViewCellWithButton alloc] init];
+            }
+            else
+            {
+                // Fix https://github.com/vector-im/riot-ios/issues/1354
+                // Do not move this line in prepareForReuse because of https://github.com/vector-im/riot-ios/issues/1323
+                yggdrasilPublicPeersCell.mxkButton.titleLabel.text = nil;
+            }
+            
+            NSString* title = @"Find public internet peers";
+            
+            [yggdrasilPublicPeersCell.mxkButton setTitle:title forState:UIControlStateNormal];
+            [yggdrasilPublicPeersCell.mxkButton setTitle:title forState:UIControlStateHighlighted];
+            [yggdrasilPublicPeersCell.mxkButton setTintColor:ThemeService.shared.theme.tintColor];
+            yggdrasilPublicPeersCell.mxkButton.titleLabel.font = [UIFont systemFontOfSize:17];
+            
+            [yggdrasilPublicPeersCell.mxkButton  removeTarget:self action:nil forControlEvents:UIControlEventTouchUpInside];
+            [yggdrasilPublicPeersCell.mxkButton addTarget:self action:@selector(onOpenPublicPeers:) forControlEvents:UIControlEventTouchUpInside];
+            yggdrasilPublicPeersCell.mxkButton.accessibilityIdentifier=@"SettingsVCYggdrasilFindPublicPeersButton";
+            
+            cell = yggdrasilPublicPeersCell;
+        }
     }
     else if (section == SETTINGS_SECTION_USER_SETTINGS_INDEX)
     {
@@ -2231,6 +2328,10 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
 
 - (nullable NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
+    if (section == SETTINGS_SECTION_YGGDRASIL_INDEX)
+    {
+        return @"Peer-to-Peer Settings";
+    }
     if (section == SETTINGS_SECTION_USER_SETTINGS_INDEX)
     {
         return NSLocalizedStringFromTable(@"settings_user_settings", @"Vector", nil);
@@ -2654,6 +2755,12 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
 
 #pragma mark - actions
 
+- (void)onOpenPublicPeers:(id)sender
+{
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString: @"https://publicpeers.neilalexander.dev"] options:nil completionHandler:^(BOOL success) {
+        
+    }];
+}
 
 - (void)onSignout:(id)sender
 {
@@ -2997,6 +3104,35 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
                 }
             }];
         }
+    }
+}
+
+- (void)updateYggdrasilDisableAWDL:(id)sender
+{
+    UISwitch *sw = (UISwitch*)sender;
+    RiotSettings.shared.yggdrasilDisableAWDL = !sw.on;
+    [[AppDelegate theDelegate] yggdrasilSetMulticastEnabled:!RiotSettings.shared.yggdrasilDisableAWDL];
+}
+
+- (void)updateYggdrasilEnableStaticPeer:(id)sender
+{
+    UISwitch *sw = (UISwitch*)sender;
+    RiotSettings.shared.yggdrasilEnableStaticPeer = sw.on;
+    
+    if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
+        [[AppDelegate theDelegate] yggdrasilSetStaticPeer:RiotSettings.shared.yggdrasilStaticPeerURI];
+    } else {
+        [[AppDelegate theDelegate] yggdrasilSetStaticPeer:@""];
+    }
+}
+
+- (void)updateYggdrasilStaticPeerURI:(id)sender
+{
+    UITextField *tf = (UITextField*)sender;
+    RiotSettings.shared.yggdrasilStaticPeerURI = tf.text;
+
+    if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
+        [[AppDelegate theDelegate] yggdrasilSetStaticPeer:RiotSettings.shared.yggdrasilStaticPeerURI];
     }
 }
 

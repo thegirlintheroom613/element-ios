@@ -407,6 +407,17 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     }
 }
 
+- (void)yggdrasilSetMulticastEnabled:(BOOL)isEnabled
+{
+    [monolith setMulticastEnabled:isEnabled];
+}
+
+- (void)yggdrasilSetStaticPeer:(NSString*)uri
+{
+    NSError *error = nil;
+    [monolith setStaticPeer:uri error:&error];
+}
+
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions
 {
     // Create message sound
@@ -468,7 +479,12 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     monolith = [[GobindDendriteMonolith alloc] init];
     //GobindDendriteMonolith *monolith = [[GobindDendriteMonolith alloc] init];
     monolith.storageDirectory = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"];
-    [monolith start];
+
+    NSString* peerURI = @"";
+    if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
+        peerURI = RiotSettings.shared.yggdrasilStaticPeerURI;
+    }
+    [monolith start:peerURI enableMulticast:!RiotSettings.shared.yggdrasilDisableAWDL];
     
     NSLog(@"HOMESERVER URL: %@\n", monolith.baseURL);
     [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers = false;

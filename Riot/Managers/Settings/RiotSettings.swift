@@ -34,6 +34,9 @@ final class RiotSettings: NSObject {
         static let stunServerFallback = "stunServerFallback"
         static let hideVerifyThisSessionAlert = "hideVerifyThisSessionAlert"
         static let hideReviewSessionsAlert = "hideReviewSessionsAlert"
+        static let yggdrasilDisableAWDL = "yggdrasilDisableAWDL"
+        static let yggdrasilEnableStaticPeer = "yggdrasilEnableStaticPeer"
+        static let yggdrasilStaticPeerURI = "yggdrasilStaticPeerURI"
     }
     
     static let shared = RiotSettings()
@@ -173,6 +176,31 @@ final class RiotSettings: NSObject {
             return defaults.bool(forKey: UserDefaultsKeys.hideReviewSessionsAlert)
         } set {
             defaults.set(newValue, forKey: UserDefaultsKeys.hideReviewSessionsAlert)
+        }
+    }
+    
+    // MARK: P2P
+    var yggdrasilDisableAWDL: Bool {
+        get {
+            return defaults.bool(forKey: UserDefaultsKeys.yggdrasilDisableAWDL)
+        } set {
+            defaults.set(newValue, forKey: UserDefaultsKeys.yggdrasilDisableAWDL)
+        }
+    }
+    
+    var yggdrasilEnableStaticPeer: Bool {
+        get {
+            return defaults.bool(forKey: UserDefaultsKeys.yggdrasilEnableStaticPeer)
+        } set {
+            defaults.set(newValue, forKey: UserDefaultsKeys.yggdrasilEnableStaticPeer)
+        }
+    }
+    
+    var yggdrasilStaticPeerURI: String? {
+        get {
+            return defaults.string(forKey: UserDefaultsKeys.yggdrasilStaticPeerURI)
+        } set {
+            defaults.set(newValue, forKey: UserDefaultsKeys.yggdrasilStaticPeerURI)
         }
     }
 }

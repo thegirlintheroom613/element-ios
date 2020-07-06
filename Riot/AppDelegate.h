@@ -101,6 +101,8 @@ extern NSString *const AppDelegateUniversalLinkDidChangeNotification;
 + (AppDelegate*)theDelegate;
 
 - (NSString*)yggdrasilPeers;
+- (void)yggdrasilSetMulticastEnabled:(BOOL)enabled;
+- (void)yggdrasilSetStaticPeer:(NSString*)uri;
 
 #pragma mark - Push Notifications
 
