@@ -54,6 +54,7 @@ enum
     SETTINGS_SECTION_YGGDRASIL_INDEX,
     SETTINGS_SECTION_USER_SETTINGS_INDEX,
     SETTINGS_SECTION_USER_INTERFACE_INDEX,
+    SETTINGS_SECTION_OTHER_INDEX,
     SETTINGS_SECTION_COUNT,
     SETTINGS_SECTION_SECURITY_INDEX,
     SETTINGS_SECTION_NOTIFICATIONS_SETTINGS_INDEX,
@@ -64,7 +65,6 @@ enum
     SETTINGS_SECTION_IGNORED_USERS_INDEX,
     SETTINGS_SECTION_INTEGRATIONS_INDEX,
     SETTINGS_SECTION_ADVANCED_INDEX,
-    SETTINGS_SECTION_OTHER_INDEX,
     SETTINGS_SECTION_LABS_INDEX,
     SETTINGS_SECTION_FLAIR_INDEX,
     SETTINGS_SECTION_DEACTIVATE_ACCOUNT_INDEX
@@ -1437,7 +1437,7 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
             
             yggdrasilStaticPeerCell.mxkLabel.text = @"Static peer";
             yggdrasilStaticPeerCell.mxkTextField.text = RiotSettings.shared.yggdrasilStaticPeerURI;
-            yggdrasilStaticPeerCell.mxkTextField.placeholder = @"Not configured";
+            yggdrasilStaticPeerCell.mxkTextField.placeholder = @"tcp://... (not configured)";
             
             yggdrasilStaticPeerCell.mxkTextField.tag = row;
             yggdrasilStaticPeerCell.mxkTextField.delegate = self;
@@ -1461,7 +1461,7 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
                 yggdrasilPublicPeersCell.mxkButton.titleLabel.text = nil;
             }
             
-            NSString* title = @"Find public internet peers";
+            NSString* title = @"Find public static peers";
             
             [yggdrasilPublicPeersCell.mxkButton setTitle:title forState:UIControlStateNormal];
             [yggdrasilPublicPeersCell.mxkButton setTitle:title forState:UIControlStateHighlighted];

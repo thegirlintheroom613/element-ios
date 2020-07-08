@@ -484,7 +484,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
         peerURI = RiotSettings.shared.yggdrasilStaticPeerURI;
     }
-    [monolith start:peerURI enableMulticast:!RiotSettings.shared.yggdrasilDisableAWDL];
+    [monolith start];
     
     NSLog(@"HOMESERVER URL: %@\n", monolith.baseURL);
     [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers = false;
@@ -629,6 +629,10 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 {
     NSLog(@"[AppDelegate] applicationDidEnterBackground");
     
+    [monolith setMulticastEnabled:NO];
+    [monolith disconnectMulticastPeers];
+    [monolith disconnectNonMulticastPeers];
+    
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
@@ -693,6 +697,15 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     NSLog(@"[AppDelegate] applicationDidBecomeActive");
+    
+    if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
+        NSError* err;
+        NSString* peerURI = RiotSettings.shared.yggdrasilStaticPeerURI;
+        [monolith setStaticPeer:peerURI error:&err];
+    }
+    if (!RiotSettings.shared.yggdrasilDisableAWDL) {
+        [monolith setMulticastEnabled:!RiotSettings.shared.yggdrasilDisableAWDL];
+    }
     
     // Check if there is crash log to send
     if (RiotSettings.shared.enableCrashReport)
