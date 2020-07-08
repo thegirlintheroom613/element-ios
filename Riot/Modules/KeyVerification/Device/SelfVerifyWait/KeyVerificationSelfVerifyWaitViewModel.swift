@@ -28,7 +28,7 @@ final class KeyVerificationSelfVerifyWaitViewModel: KeyVerificationSelfVerifyWai
     private let keyVerificationService: KeyVerificationService
     private let verificationManager: MXKeyVerificationManager
     private let isNewSignIn: Bool
-    private let secretsRecoveryAvailability: SecretsRecoveryAvailability
+    
     private var keyVerificationRequest: MXKeyVerificationRequest?
     
     // MARK: Public
@@ -43,7 +43,6 @@ final class KeyVerificationSelfVerifyWaitViewModel: KeyVerificationSelfVerifyWai
         self.verificationManager = session.crypto.keyVerificationManager
         self.keyVerificationService = KeyVerificationService()
         self.isNewSignIn = isNewSignIn
-        self.secretsRecoveryAvailability = session.crypto.recoveryService.vc_availability
     }
     
     deinit {
@@ -58,12 +57,6 @@ final class KeyVerificationSelfVerifyWaitViewModel: KeyVerificationSelfVerifyWai
             self.loadData()
         case .cancel:
             self.cancel()
-        case .recoverSecrets:
-            switch self.secretsRecoveryAvailability {
-            case .notAvailable:
-                fatalError("Should not happen: When recovery is not available button is hidden")
-            case .available(let secretsRecoveryMode):                self.coordinatorDelegate?.keyVerificationSelfVerifyWaitViewModel(self, wantsToRecoverSecretsWith: secretsRecoveryMode)
-            }
         }
     }
     
@@ -87,10 +80,8 @@ final class KeyVerificationSelfVerifyWaitViewModel: KeyVerificationSelfVerifyWai
             })
         }
         
-        let viewData = KeyVerificationSelfVerifyWaitViewData(isNewSignIn: self.isNewSignIn, secretsRecoveryAvailability: self.secretsRecoveryAvailability)
-        
         self.registerKeyVerificationManagerNewRequestNotification(for: self.verificationManager)
-        self.update(viewState: .loaded(viewData))
+        self.update(viewState: .loaded(self.isNewSignIn))
         self.registerTransactionDidStateChangeNotification()
     }
     

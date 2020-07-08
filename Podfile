@@ -7,10 +7,10 @@ use_frameworks!
 
 # Different flavours of pods to MatrixKit
 # The current MatrixKit pod version
-$matrixKitVersion = '0.12.7'
+$matrixKitVersion = '0.12.6'
 
-# The specific branch version (supported: develop)
-#$matrixKitVersion = 'develop'
+# The specific branch version (supported: develop, xcode11)
+$matrixKitVersion = 'xcode11'
 
 # The one used for developing both MatrixSDK and MatrixKit
 # Note that MatrixSDK must be cloned into a folder called matrix-ios-sdk next to the MatrixKit folder
@@ -25,7 +25,7 @@ def import_MatrixKit
         pod 'MatrixSDK/JingleCallStack', :path => '../matrix-ios-sdk/MatrixSDK.podspec'
         pod 'MatrixKit', :path => '../matrix-ios-kit/MatrixKit.podspec'
     else
-        if $matrixKitVersion == 'develop'
+        if $matrixKitVersion == 'xcode11' || $matrixKitVersion == 'develop'
             pod 'MatrixSDK', :git => 'https://github.com/matrix-org/matrix-ios-sdk.git', :branch => $matrixKitVersion
             pod 'MatrixSDK/SwiftSupport', :git => 'https://github.com/matrix-org/matrix-ios-sdk.git', :branch => $matrixKitVersion
             pod 'MatrixSDK/JingleCallStack', :git => 'https://github.com/matrix-org/matrix-ios-sdk.git', :branch => $matrixKitVersion
@@ -45,7 +45,7 @@ def import_MatrixKitAppExtension
         pod 'MatrixSDK/SwiftSupport', :path => '../matrix-ios-sdk/MatrixSDK.podspec'
         pod 'MatrixKit/AppExtension', :path => '../matrix-ios-kit/MatrixKit.podspec'
     else
-        if $matrixKitVersion == 'develop'
+        if $matrixKitVersion == 'xcode11' || $matrixKitVersion == 'develop'
             pod 'MatrixSDK', :git => 'https://github.com/matrix-org/matrix-ios-sdk.git', :branch => $matrixKitVersion
             pod 'MatrixSDK/SwiftSupport', :git => 'https://github.com/matrix-org/matrix-ios-sdk.git', :branch => $matrixKitVersion
             pod 'MatrixKit/AppExtension', :git => 'https://github.com/matrix-org/matrix-ios-kit.git', :branch => $matrixKitVersion

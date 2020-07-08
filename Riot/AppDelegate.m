@@ -2358,10 +2358,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     [MXMediaManager clearCache];
     
     // Reset key backup banner preferences
-    [SecureBackupBannerPreferences.shared reset];
-    
-    // Reset key verification banner preferences
-    [CrossSigningBannerPreferences.shared reset];
+    [KeyBackupBannerPreferences.shared reset];
     
 #ifdef MX_CALL_STACK_ENDPOINT
     // Erase all created certificates and private keys by MXEndpointCallStack
@@ -3032,7 +3029,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                 }
             };
 
-            [mxSession vc_canEnableE2EByDefaultInNewRoomWithUsers:invite success:^(BOOL canEnableE2E) {
+            [mxSession canEnableE2EByDefaultInNewRoomWithUsers:invite success:^(BOOL canEnableE2E) {
                 
                 MXRoomCreationParameters *roomCreationParameters = [MXRoomCreationParameters new];
                 roomCreationParameters.visibility = kMXRoomDirectoryVisibilityPrivate;

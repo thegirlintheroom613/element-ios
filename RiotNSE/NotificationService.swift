@@ -22,8 +22,8 @@ class NotificationService: UNNotificationServiceExtension {
     /// Content handlers. Keys are eventId's
     var contentHandlers: [String: ((UNNotificationContent) -> Void)] = [:]
     
-    /// Best attempt contents. Will be updated incrementally, if something fails during the process, this best attempt content will be showed as notification. Keys are eventId's
-    var bestAttemptContents: [String: UNMutableNotificationContent] = [:]
+    /// Original contents. Keys are eventId's
+    var originalContents: [String: UNMutableNotificationContent] = [:]
     
     /// Cached events. Keys are eventId's
     var cachedEvents: [String: MXEvent] = [:]
@@ -36,11 +36,6 @@ class NotificationService: UNNotificationServiceExtension {
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
         //  set app-group identifier first
         MXSDKOptions.sharedInstance().applicationGroupIdentifier = "group.im.vector.p2p"
-        
-        if DataProtectionHelper.isDeviceInRebootedAndLockedState(appGroupIdentifier: MXSDKOptions.sharedInstance().applicationGroupIdentifier) {
-            //  kill the process in this state, this leads for the notification to be displayed as came from APNS
-            exit(0)
-        }
         
         //  setup logs
         setupLogger()
@@ -64,20 +59,13 @@ class NotificationService: UNNotificationServiceExtension {
         guard let content = request.content.mutableCopy() as? UNMutableNotificationContent else {
             return
         }
-        
-        //  read badge from "unread_count"
-        //  no need to check before, if it's nil, the badge will remain unchanged
-        content.badge = userInfo["unread_count"] as? NSNumber
-        
-        bestAttemptContents[eventId] = content
+        originalContents[eventId] = content
         contentHandlers[eventId] = contentHandler
         
         //  setup user account
         setup(withRoomId: roomId, eventId: eventId) {
-            //  preprocess the payload, will attempt to fetch room display name
-            self.preprocessPayload(forEventId: eventId, roomId: roomId)
             //  fetch the event first
-            self.fetchEvent(withEventId: eventId, roomId: roomId)
+            self.fetchEvent(withEventId: eventId)
         }
     }
     
@@ -104,7 +92,6 @@ class NotificationService: UNNotificationServiceExtension {
         sdkOptions.applicationGroupIdentifier = "group.im.vector.p2p"
         sdkOptions.disableIdenticonUseForUserAvatar = true
         sdkOptions.enableCryptoWhenStartingMXSession = true
-        sdkOptions.enableKeyBackupWhenStartingMXCrypto = false
         sdkOptions.backgroundModeHandler = MXUIKitBackgroundModeHandler()
         Bundle.mxk_customizeLocalizedStringTableName("Vector")
         
@@ -119,7 +106,7 @@ class NotificationService: UNNotificationServiceExtension {
                         break
                     case .failure(let error):
                         NSLog("[NotificationService] setup: MXSession.setStore method returned error: \(String(describing: error))")
-                        self.fallbackToBestAttemptContent(forEventId: eventId)
+                        self.fallbackToOriginalContent(forEventId: eventId)
                         break
                     }
                 })
@@ -129,33 +116,26 @@ class NotificationService: UNNotificationServiceExtension {
             }
         } else {
             NSLog("[NotificationService] setup: No active accounts")
-            fallbackToBestAttemptContent(forEventId: eventId)
+            fallbackToOriginalContent(forEventId: eventId)
         }
     }
     
-    /// Attempts to preprocess payload and attach room display name to the best attempt content
-    /// - Parameters:
-    ///   - eventId: Event identifier to mutate best attempt content
-    ///   - roomId: Room identifier to fetch display name
-    func preprocessPayload(forEventId eventId: String, roomId: String) {
-        guard let session = NotificationService.mxSession else { return }
-        guard let roomDisplayName = session.store.summary?(ofRoom: roomId)?.displayname else { return }
-        let isDirect = session.directUserId(inRoom: roomId) != nil
-        if isDirect {
-            bestAttemptContents[eventId]?.body = NSString.localizedUserNotificationString(forKey: "MESSAGE_FROM_X", arguments: [roomDisplayName as Any])
-        } else {
-            bestAttemptContents[eventId]?.body = NSString.localizedUserNotificationString(forKey: "MESSAGE_IN_X", arguments: [roomDisplayName as Any])
-        }
-    }
-    
-    func fetchEvent(withEventId eventId: String, roomId: String) {
-        guard let mxSession = NotificationService.mxSession else {
+    func fetchEvent(withEventId eventId: String) {
+        guard let content = originalContents[eventId], let mxSession = NotificationService.mxSession else {
             //  there is something wrong, do not change the content
             NSLog("[NotificationService] fetchEvent: Either originalContent or mxSession is missing.")
-            fallbackToBestAttemptContent(forEventId: eventId)
+            fallbackToOriginalContent(forEventId: eventId)
             return
         }
-
+        let userInfo = content.userInfo
+        
+        guard let roomId = userInfo["room_id"] as? String else {
+            //  it's not a Matrix notification, do not change the content
+            NSLog("[NotificationService] fetchEvent: This is not a Matrix notification.")
+            contentHandlers[eventId]?(content)
+            return
+        }
+        
         /// Inline function to handle encryption for event, either from cache or from the backend
         /// - Parameter event: The event to be handled
         func handleEncryption(forEvent event: MXEvent) {
@@ -170,7 +150,7 @@ class NotificationService: UNNotificationServiceExtension {
             if !self.showDecryptedContentInNotifications {
                 //  do not show decrypted content in notification
                 NSLog("[NotificationService] fetchEvent: Do not show decrypted content in notifications.")
-                self.fallbackToBestAttemptContent(forEventId: event.eventId)
+                self.fallbackToOriginalContent(forEventId: event.eventId)
                 return
             }
             
@@ -190,7 +170,7 @@ class NotificationService: UNNotificationServiceExtension {
             } else {
                 //  decryption failed
                 NSLog("[NotificationService] fetchEvent: Event needs to be decrpyted, but we don't have the keys to decrypt it. Launching a background sync.")
-                self.launchBackgroundSync(forEventId: eventId, roomId: roomId)
+                self.launchBackgroundSync(forEventId: eventId)
             }
         }
         
@@ -208,7 +188,7 @@ class NotificationService: UNNotificationServiceExtension {
                 
                 guard let event = event else {
                     NSLog("[NotificationService] fetchEvent: MXSession.event method returned successfully with no event.")
-                    self.fallbackToBestAttemptContent(forEventId: eventId)
+                    self.fallbackToOriginalContent(forEventId: eventId)
                     return
                 }
                 
@@ -223,15 +203,15 @@ class NotificationService: UNNotificationServiceExtension {
                     return
                 }
                 NSLog("[NotificationService] fetchEvent: MXSession.event method returned error: \(String(describing: error))")
-                self.fallbackToBestAttemptContent(forEventId: eventId)
+                self.fallbackToOriginalContent(forEventId: eventId)
             }
         }
     }
     
-    func launchBackgroundSync(forEventId eventId: String, roomId: String) {
+    func launchBackgroundSync(forEventId eventId: String) {
         guard let mxSession = NotificationService.mxSession else {
             NSLog("[NotificationService] launchBackgroundSync: mxSession is missing.")
-            self.fallbackToBestAttemptContent(forEventId: eventId)
+            self.fallbackToOriginalContent(forEventId: eventId)
             return
         }
 
@@ -243,7 +223,7 @@ class NotificationService: UNNotificationServiceExtension {
                     NSLog("[NotificationService] launchBackgroundSync: MXSession.initialBackgroundSync returned too late successfully")
                     return
                 }
-                self.fetchEvent(withEventId: eventId, roomId: roomId)
+                self.fetchEvent(withEventId: eventId)
                 break
             case .failure(let error):
                 guard let self = self else {
@@ -251,15 +231,15 @@ class NotificationService: UNNotificationServiceExtension {
                     return
                 }
                 NSLog("[NotificationService] launchBackgroundSync: MXSession.initialBackgroundSync returned with error: \(String(describing: error))")
-                self.fallbackToBestAttemptContent(forEventId: eventId)
+                self.fallbackToOriginalContent(forEventId: eventId)
                 break
             }
         }
     }
     
     func processEvent(_ event: MXEvent) {
-        guard let content = bestAttemptContents[event.eventId], let mxSession = NotificationService.mxSession else {
-            self.fallbackToBestAttemptContent(forEventId: event.eventId)
+        guard let content = originalContents[event.eventId], let mxSession = NotificationService.mxSession else {
+            self.fallbackToOriginalContent(forEventId: event.eventId)
             return
         }
 
@@ -286,11 +266,11 @@ class NotificationService: UNNotificationServiceExtension {
         }
     }
     
-    func fallbackToBestAttemptContent(forEventId eventId: String) {
-        NSLog("[NotificationService] fallbackToBestAttemptContent: method called.")
+    func fallbackToOriginalContent(forEventId eventId: String) {
+        NSLog("[NotificationService] fallbackToOriginalContent: method called.")
         
-        guard let content = bestAttemptContents[eventId] else {
-            NSLog("[NotificationService] fallbackToBestAttemptContent: Best attempt content is missing.")
+        guard let content = originalContents[eventId] else {
+            NSLog("[NotificationService] fallbackToOriginalContent: Original content is missing.")
             return
         }
         
@@ -400,7 +380,7 @@ class NotificationService: UNNotificationServiceExtension {
                         })
                     } else {
                         // Encrypted messages falls here
-                        notificationBody = NSString.localizedUserNotificationString(forKey: "MESSAGE_IN_X", arguments: [eventSenderName as Any])
+                        notificationBody = NSString.localizedUserNotificationString(forKey: "MSG_FROM_USER", arguments: [eventSenderName as Any])
                     }
                 } else {
                     notificationTitle = eventSenderName
@@ -417,7 +397,7 @@ class NotificationService: UNNotificationServiceExtension {
                         break
                     default:
                         // Encrypted messages falls here
-                        notificationBody = NSString.localizedUserNotificationString(forKey: "MESSAGE_FROM_X", arguments: [eventSenderName as Any])
+                        notificationBody = NSString.localizedUserNotificationString(forKey: "MSG_FROM_USER", arguments: [eventSenderName as Any])
                         break
                     }
                 }
@@ -528,8 +508,6 @@ class NotificationService: UNNotificationServiceExtension {
                 soundName = "message.caf"
             }
         }
-        
-        NSLog("Sound name: \(String(describing: soundName))")
         
         return soundName
     }

@@ -1,5 +1,5 @@
 /*
- Copyright 2020 New Vector Ltd
+ Copyright 2019 New Vector Ltd
  
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 
 import UIKit
 
-@objc protocol CrossSigningSetupBannerCellDelegate: class {
-    func crossSigningSetupBannerCellDidTapCloseAction(_ cell: CrossSigningSetupBannerCell)
+@objc protocol KeyBackupBannerCellDelegate: class {
+    func keyBackupBannerCellDidTapCloseAction(_ cell: KeyBackupBannerCell)
 }
 
 @objcMembers
-final class CrossSigningSetupBannerCell: MXKTableViewCell, Themable {
+final class KeyBackupBannerCell: MXKTableViewCell {
     
     // MARK: - Properties
-    
+
     // MARK: Outlets
-    
+
     @IBOutlet private weak var shieldImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var subtitleLabel: UILabel!
@@ -34,7 +34,7 @@ final class CrossSigningSetupBannerCell: MXKTableViewCell, Themable {
     
     // MARK: Public
     
-    weak var delegate: CrossSigningSetupBannerCellDelegate?
+    weak var delegate: KeyBackupBannerCellDelegate?
     
     // MARK: - Overrides
     
@@ -50,7 +50,12 @@ final class CrossSigningSetupBannerCell: MXKTableViewCell, Themable {
         super.customizeRendering()
         
         let theme = ThemeService.shared().theme
-        self.update(theme: theme)
+        
+        self.shieldImageView.tintColor = theme.textPrimaryColor
+        self.closeButton.tintColor = theme.textPrimaryColor
+        
+        self.titleLabel.textColor = theme.textPrimaryColor
+        self.subtitleLabel.textColor = theme.tintColor
     }
     
     // MARK: - Life cycle
@@ -58,30 +63,39 @@ final class CrossSigningSetupBannerCell: MXKTableViewCell, Themable {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // TODO: Image size is too small, use an higher resolution one.
-        let shieldImage = Asset.Images.encryptionNormal.image.withRenderingMode(.alwaysTemplate)
+        let shieldImage = Asset.Images.keyBackupLogo.image.withRenderingMode(.alwaysTemplate)
         self.shieldImageView.image = shieldImage
         
         let closeImage = Asset.Images.closeBanner.image.withRenderingMode(.alwaysTemplate)
         self.closeButton.setImage(closeImage, for: .normal)
-        
-        self.titleLabel.text = VectorL10n.crossSigningSetupBannerTitle
-        self.subtitleLabel.text = VectorL10n.crossSigningSetupBannerSubtitle
     }
     
     // MARK: - Public
     
-    func update(theme: Theme) {
-        self.shieldImageView.tintColor = theme.textPrimaryColor
-        self.closeButton.tintColor = theme.textPrimaryColor
+    func configure(for banner: KeyBackupBanner) {
         
-        self.titleLabel.textColor = theme.textPrimaryColor
-        self.subtitleLabel.textColor = theme.textPrimaryColor
+        let title: String?
+        let subtitle: String?
+        
+        switch banner {
+        case .setup:
+            title = VectorL10n.keyBackupSetupBannerTitle
+            subtitle = VectorL10n.keyBackupSetupBannerSubtitle
+        case .recover:
+            title = VectorL10n.keyBackupRecoverBannerTitle
+            subtitle = VectorL10n.keyBackupRecoverConnentBannerSubtitle
+        case .none:
+            title = nil
+            subtitle = nil
+        }
+        
+        self.titleLabel.text = title
+        self.subtitleLabel.text = subtitle
     }
     
     // MARK: - Actions
     
     @IBAction private func closeButtonAction(_ sender: Any) {
-        self.delegate?.crossSigningSetupBannerCellDidTapCloseAction(self)
+        self.delegate?.keyBackupBannerCellDidTapCloseAction(self)
     }
 }

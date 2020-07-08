@@ -18,20 +18,10 @@
 
 import Foundation
 
-enum SecretsRecoveryAvailability {
-    case notAvailable
-    case available(_ mode: SecretsRecoveryMode)
-}
-
-struct KeyVerificationSelfVerifyWaitViewData {
-    let isNewSignIn: Bool
-    let secretsRecoveryAvailability: SecretsRecoveryAvailability
-}
-
 /// KeyVerificationSelfVerifyWaitViewController view state
 enum KeyVerificationSelfVerifyWaitViewState {
     case loading
-    case loaded(_ viewData: KeyVerificationSelfVerifyWaitViewData)
+    case loaded(_ isNewSignIn: Bool)
     case cancelled(MXTransactionCancelCode)
     case cancelledByMe(MXTransactionCancelCode)
     case error(Error)

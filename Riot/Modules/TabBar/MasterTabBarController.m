@@ -581,7 +581,7 @@
     // Considering all the current sessions.
     for (MXSession *session in mxSessionArray)
     {
-        roomCount += [session vc_missedDiscussionsCount];
+        roomCount += [session riot_missedDiscussionsCount];
     }
     
     return roomCount;

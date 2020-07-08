@@ -149,7 +149,7 @@ typedef void (^blockSettingsViewController_onReadyToDestroy)(void);
 
 
 @interface SettingsViewController () <DeactivateAccountViewControllerDelegate,
-SecureBackupSetupCoordinatorBridgePresenterDelegate,
+KeyBackupSetupCoordinatorBridgePresenterDelegate,
 SignOutAlertPresenterDelegate,
 SingleImagePickerPresenterDelegate,
 SettingsDiscoveryTableViewSectionDelegate, SettingsDiscoveryViewModelCoordinatorDelegate,
@@ -241,6 +241,8 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
     // The current pushed view controller
     UIViewController *pushedViewController;
 
+    KeyBackupSetupCoordinatorBridgePresenter *keyBackupSetupCoordinatorBridgePresenter;
+
     SettingsIdentityServerCoordinatorBridgePresenter *identityServerSettingsCoordinatorBridgePresenter;
 }
 
@@ -267,9 +269,6 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
 @property (nonatomic, strong) SettingsDiscoveryViewModel *settingsDiscoveryViewModel;
 @property (nonatomic, strong) SettingsDiscoveryTableViewSection *settingsDiscoveryTableViewSection;
 @property (nonatomic, strong) SettingsDiscoveryThreePidDetailsCoordinatorBridgePresenter *discoveryThreePidDetailsPresenter;
-
-@property (nonatomic, strong) SecureBackupSetupCoordinatorBridgePresenter *secureBackupSetupCoordinatorBridgePresenter;
-@property (nonatomic, strong) AuthenticatedSessionViewControllerFactory *authenticatedSessionViewControllerFactory;
 
 @end
 
@@ -445,7 +444,7 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
         [super destroy];
     }
 
-    _secureBackupSetupCoordinatorBridgePresenter = nil;
+    keyBackupSetupCoordinatorBridgePresenter = nil;
     identityServerSettingsCoordinatorBridgePresenter = nil;
 }
 
@@ -4190,72 +4189,35 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
     [deactivateAccountViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - SecureBackupSetupCoordinatorBridgePresenter
 
-- (void)showSecureBackupSetupFromSignOutFlow
+#pragma mark - KeyBackupSetupCoordinatorBridgePresenter
+
+- (void)showKeyBackupSetupFromSignOutFlow:(BOOL)showFromSignOutFlow
 {
-    if (self.canSetupSecureBackup)
-    {
-        [self setupSecureBackup2];
-    }
-    else
-    {
-        // Set up cross-signing first
-        [self setupCrossSigningWithTitle:NSLocalizedStringFromTable(@"secure_key_backup_setup_intro_title", @"Vector", nil)
-                                 message:NSLocalizedStringFromTable(@"security_settings_user_password_description", @"Vector", nil)
-                                 success:^{
-                                     [self setupSecureBackup2];
-                                 } failure:^(NSError *error) {
-                                 }];
-    }
+    keyBackupSetupCoordinatorBridgePresenter = [[KeyBackupSetupCoordinatorBridgePresenter alloc] initWithSession:self.mainSession];
+    
+    [keyBackupSetupCoordinatorBridgePresenter presentFrom:self
+                                     isStartedFromSignOut:showFromSignOutFlow
+                                                 animated:true];
+    
+    keyBackupSetupCoordinatorBridgePresenter.delegate = self;
 }
 
-- (void)setupSecureBackup2
-{
-    SecureBackupSetupCoordinatorBridgePresenter *secureBackupSetupCoordinatorBridgePresenter = [[SecureBackupSetupCoordinatorBridgePresenter alloc] initWithSession:self.mainSession];
-    secureBackupSetupCoordinatorBridgePresenter.delegate = self;
-    
-    [secureBackupSetupCoordinatorBridgePresenter presentFrom:self animated:YES];
-    
-    self.secureBackupSetupCoordinatorBridgePresenter = secureBackupSetupCoordinatorBridgePresenter;
+- (void)keyBackupSetupCoordinatorBridgePresenterDelegateDidCancel:(KeyBackupSetupCoordinatorBridgePresenter *)bridgePresenter {
+    [keyBackupSetupCoordinatorBridgePresenter dismissWithAnimated:true];
+    keyBackupSetupCoordinatorBridgePresenter = nil;
 }
 
-- (BOOL)canSetupSecureBackup
-{
-    // Accept to create a setup only if we have the 3 cross-signing keys
-    // This is the path to have a sane state
-    // TODO: What about missing MSK that was not gossiped before?
-    
-    MXRecoveryService *recoveryService = self.mainSession.crypto.recoveryService;
-    
-    NSArray *crossSigningServiceSecrets = @[
-                                            MXSecretId.crossSigningMaster,
-                                            MXSecretId.crossSigningSelfSigning,
-                                            MXSecretId.crossSigningUserSigning];
-    
-    return ([recoveryService.secretsStoredLocally mx_intersectArray:crossSigningServiceSecrets].count
-            == crossSigningServiceSecrets.count);
-}
-
-#pragma mark - SecureBackupSetupCoordinatorBridgePresenterDelegate
-
-- (void)secureBackupSetupCoordinatorBridgePresenterDelegateDidComplete:(SecureBackupSetupCoordinatorBridgePresenter *)coordinatorBridgePresenter
-{
-    [self.secureBackupSetupCoordinatorBridgePresenter dismissWithAnimated:YES completion:nil];
-    self.secureBackupSetupCoordinatorBridgePresenter = nil;
-}
-
-- (void)secureBackupSetupCoordinatorBridgePresenterDelegateDidCancel:(SecureBackupSetupCoordinatorBridgePresenter *)coordinatorBridgePresenter
-{
-    [self.secureBackupSetupCoordinatorBridgePresenter dismissWithAnimated:YES completion:nil];
-    self.secureBackupSetupCoordinatorBridgePresenter = nil;
+- (void)keyBackupSetupCoordinatorBridgePresenterDelegateDidSetupRecoveryKey:(KeyBackupSetupCoordinatorBridgePresenter *)bridgePresenter {
+    [keyBackupSetupCoordinatorBridgePresenter dismissWithAnimated:true];
+    keyBackupSetupCoordinatorBridgePresenter = nil;
 }
 
 #pragma mark - SignOutAlertPresenterDelegate
 
 - (void)signOutAlertPresenterDidTapBackupAction:(SignOutAlertPresenter * _Nonnull)presenter
 {
-    [self showSecureBackupSetupFromSignOutFlow];
+    [self showKeyBackupSetupFromSignOutFlow:YES];
 }
 
 - (void)signOutAlertPresenterDidTapSignOutAction:(SignOutAlertPresenter * _Nonnull)presenter
@@ -4278,63 +4240,6 @@ SettingsIdentityServerCoordinatorBridgePresenterDelegate>
         self.signOutButton.enabled = YES;
     }];
 }
-
-- (void)setupCrossSigningWithTitle:(NSString*)title
-                           message:(NSString*)message
-                           success:(void (^)(void))success
-                           failure:(void (^)(NSError *error))failure
-{
-    __block UIViewController *viewController;
-    [self startActivityIndicator];
-    
-    // Get credentials to set up cross-signing
-    NSString *path = [NSString stringWithFormat:@"%@/keys/device_signing/upload", kMXAPIPrefixPathUnstable];
-    _authenticatedSessionViewControllerFactory = [[AuthenticatedSessionViewControllerFactory alloc] initWithSession:self.mainSession];
-    [_authenticatedSessionViewControllerFactory viewControllerForPath:path
-                                                           httpMethod:@"POST"
-                                                                title:title
-                                                              message:message
-                                                     onViewController:^(UIViewController * _Nonnull theViewController)
-     {
-         viewController = theViewController;
-         [self presentViewController:viewController animated:YES completion:nil];
-         
-     } onAuthenticated:^(NSDictionary * _Nonnull authParams) {
-         
-         [viewController dismissViewControllerAnimated:NO completion:nil];
-         viewController = nil;
-         
-         MXCrossSigning *crossSigning = self.mainSession.crypto.crossSigning;
-         if (crossSigning)
-         {
-             [crossSigning setupWithAuthParams:authParams success:^{
-                 [self stopActivityIndicator];
-                 success();
-             } failure:^(NSError * _Nonnull error) {
-                 [self stopActivityIndicator];
-                 
-                 [[AppDelegate theDelegate] showErrorAsAlert:error];
-                 failure(error);
-             }];
-         }
-         
-     } onCancelled:^{
-         [self stopActivityIndicator];
-         
-         [viewController dismissViewControllerAnimated:NO completion:nil];
-         viewController = nil;
-         failure(nil);
-     } onFailure:^(NSError * _Nonnull error) {
-         
-         [self stopActivityIndicator];
-         [[AppDelegate theDelegate] showErrorAsAlert:error];
-         
-         [viewController dismissViewControllerAnimated:NO completion:nil];
-         viewController = nil;
-         failure(error);
-     }];
-}
-
 
 #pragma mark - SingleImagePickerPresenterDelegate
 

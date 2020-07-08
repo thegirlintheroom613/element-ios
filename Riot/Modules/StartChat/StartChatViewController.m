@@ -564,7 +564,7 @@
                 [[AppDelegate theDelegate] showErrorAsAlert:error];
             };
 
-            [self.mainSession vc_canEnableE2EByDefaultInNewRoomWithUsers:inviteArray success:^(BOOL canEnableE2E) {
+            [self.mainSession canEnableE2EByDefaultInNewRoomWithUsers:inviteArray success:^(BOOL canEnableE2E) {
                 MXStrongifyAndReturnIfNil(self);
 
                 // Create new room
