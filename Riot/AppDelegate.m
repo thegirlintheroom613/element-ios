@@ -629,11 +629,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 {
     NSLog(@"[AppDelegate] applicationDidEnterBackground");
     
-    [monolith setMulticastEnabled:NO];
-    [monolith disconnectMulticastPeers];
-    [monolith disconnectNonMulticastPeers];
-    [monolith suspend];
-    
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
@@ -795,6 +790,11 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 {
     NSLog(@"[AppDelegate] applicationWillTerminate");
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    
+    [monolith setMulticastEnabled:NO];
+    [monolith disconnectMulticastPeers];
+    [monolith disconnectNonMulticastPeers];
+    [monolith suspend];
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
