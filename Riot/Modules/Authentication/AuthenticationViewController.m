@@ -95,7 +95,7 @@
     
     self.defaultIdentityServerUrl = [[NSUserDefaults standardUserDefaults] objectForKey:@"identityserverurl"];
     
-    self.welcomeImageView.image = [UIImage imageNamed:@"logo"];
+    self.welcomeImageView.image = [UIImage imageNamed:@"horizontal_logo"];
     
     [self.submitButton.layer setCornerRadius:5];
     self.submitButton.clipsToBounds = YES;
@@ -175,6 +175,8 @@
     self.view.backgroundColor = ThemeService.shared.theme.backgroundColor;
 
     self.authenticationScrollView.backgroundColor = ThemeService.shared.theme.backgroundColor;
+    
+    self.welcomeImageView.tintColor = ThemeService.shared.theme.tintColor;
 
     // Style the authentication fallback webview screen so that its header matches to navigation bar style
     self.authFallbackContentView.backgroundColor = ThemeService.shared.theme.baseColor;
@@ -226,6 +228,8 @@
 
     self.softLogoutClearDataLabel.textColor = ThemeService.shared.theme.textPrimaryColor;
     self.softLogoutClearDataButton.backgroundColor = ThemeService.shared.theme.warningColor;
+    
+    self.customServersTickButton.tintColor = ThemeService.shared.theme.tintColor;
 
     [self.authInputsView customizeViewRendering];
     
@@ -1111,8 +1115,10 @@
     MXKAccount *account = [[MXKAccountManager sharedManager] accountForUserId:userId];
     MXSession *session = account.mxSession;
     
+    BOOL botCreationEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"enableBotCreation"];
+    
     // Create DM with Riot-bot on new account creation.
-    if (self.authType == MXKAuthenticationTypeRegister)
+    if (self.authType == MXKAuthenticationTypeRegister && botCreationEnabled)
     {
         MXRoomCreationParameters *roomCreationParameters = [MXRoomCreationParameters parametersForDirectRoomWithUser:@"@riot-bot:matrix.org"];
         [session createRoomWithParameters:roomCreationParameters success:nil failure:^(NSError *error) {
