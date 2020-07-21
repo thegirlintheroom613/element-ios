@@ -118,7 +118,8 @@ final class RiotSettings: NSObject {
     
     var enableCrashReport: Bool {
         get {
-            return defaults.bool(forKey: UserDefaultsKeys.enableCrashReport)
+            return false
+            //return defaults.bool(forKey: UserDefaultsKeys.enableCrashReport)
         } set {
             defaults.set(newValue, forKey: UserDefaultsKeys.enableCrashReport)
         }
