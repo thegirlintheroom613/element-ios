@@ -399,14 +399,25 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 - (NSString*)yggdrasilPeers
 {
-    long count = [monolith peerCount];
-    if (count == 0) {
+    long peerCount = [monolith peerCount];
+    long sessionCount = [monolith sessionCount];
+    NSMutableString *text = [NSMutableString string];
+    if (peerCount == 0) {
         return @"No connected peers";
-    } else if (count == 1) {
-        return [NSString stringWithFormat:@"%li connected peer", count];
-    } else {
-        return [NSString stringWithFormat:@"%li connected peers", count];
     }
+    if (sessionCount == 0) {
+        [text appendString:@"No connections"];
+    } else if (sessionCount == 1) {
+        [text appendFormat:@"%li connection", sessionCount];
+    } else {
+        [text appendFormat:@"%li connections", sessionCount];
+    }
+    if (peerCount == 1) {
+        [text appendFormat:@" via %li peer", peerCount];
+    } else {
+        [text appendFormat:@" via %li peers", peerCount];
+    }
+    return text;
 }
 
 - (void)yggdrasilSetMulticastEnabled:(BOOL)isEnabled
@@ -701,7 +712,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 {
     NSLog(@"[AppDelegate] applicationDidBecomeActive");
     
-    [monolith resume];
     if (RiotSettings.shared.yggdrasilEnableStaticPeer) {
         NSError* err;
         NSString* peerURI = RiotSettings.shared.yggdrasilStaticPeerURI;
